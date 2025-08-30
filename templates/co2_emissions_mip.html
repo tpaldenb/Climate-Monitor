@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Global CO₂ Emissions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.cdnfonts.com/css/space-theme" rel="stylesheet">
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/space-theme');
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            color: #eee;
+            overflow-x: hidden;
+        }
+
+        /* Star Background */
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        @keyframes twinkle {
+            from { opacity: 0.2; }
+            to { opacity: 1; }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, #0a0a0a 0%, #111122 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            padding: 20px;
+            transition: left 0.3s ease;
+            border-right: 1px solid rgba(0,255,255,0.2);
+            box-shadow: 0 0 30px rgba(0, 88, 171, 1), 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .sidebar-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-family: 'Space Theme', sans-serif;
+            color: #eee;
+        }
+        .sidebar-nav a {
+            font-family: 'Space Theme', sans-serif;
+            font-size: 16px;  
+            color: #eee;
+            text-decoration: none;
+            padding: 10px 0;
+            display: block;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .sidebar-nav a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: #eee;
+            transition: width 0.3s ease;
+        }
+        .sidebar-nav a:hover {
+            background-color: rgba(0,255,255,0.1);
+            color: #fff;
+            text-shadow: 0 0 5px #eee;
+        }
+        .sidebar-nav a:hover::before {
+            width: 100%;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            margin-left: 250px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #333;
+            color: #eee;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        h1, h2 {
+            color: #fff;
+            font-family: 'Space Theme', sans-serif;
+        }
+
+        .container {
+            background-color: #111;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 88, 171, 0.8), 0 5px 15px rgba(0,0,0,0.5);
+            margin-top: 20px;
+        }
+
+        #map, #graph {
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 88, 171, 0.8), 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        #error_message {
+            color: #ff4d4d;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { left: -250px; }
+            .main-content { margin-left: 0; }
+            .sidebar.open { left: 0; }
+            .main-content.open { margin-left: 250px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Star Background -->
+    <div id="stars"></div>
+
+    <div class="sidebar">
+        <h2 class="sidebar-title">AI Climate Monitor</h2>
+        <ul class="sidebar-nav">
+            <li><a href="/co2_absorption_air_sea">Global Ocean Carbon Absorption</a></li>
+            <li><a href="/co2_emissions_mip">Global Annual CO₂ Emissions</a></li>
+            <li><a href="/co2_emissions_odiac">Global CO₂ Emissions</a></li>
+            <li><a href="/methane_emissions_tm5">Global Methane Emissions</a></li>
+            <li><a href="/methane_concentrations_emit">Global Arid Regions High Methane Concentrations</a></li>
+            <li><a href="/prediction">AI Climate Predictions</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="container mt-5">
+            <h1 class="text-center mb-4">Global CO₂ Emissions</h1>
+            <p class="text-center">Visualizing Fossil Fuel Emissions (FF) on a Global Scale</p>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label for="latitude">Latitude:</label>
+                    <input type="text" id="latitude" name="latitude" value="{{ latitude }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label for="longitude">Longitude:</label>
+                    <input type="text" id="longitude" name="longitude" value="{{ longitude }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label for="country">Country:</label>
+                    <select id="country" name="country" class="form-control">
+                        {% for option in country_options %}
+                            <option value="{{ option.value }}" {{ 'selected' if option.value == country else '' }}>{{ option.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3 float-right">Update Map</button>
+            <div id="error_message" class="text-danger mt-2" style="display:none;">{{ error_message }}</div>
+
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div id="map" style="height: 600px;">{{ map_html | safe }}</div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-md-12">
+                    <h2 class="text-center mb-3">CO₂ Emissions Graph</h2>
+                    <p class="text-center mb-2">Fossil fuel emissions (FF) from 2015 to 2020.</p>
+                    <div id="graph" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-5 py-3 bg-dark">
+        <div class="container">
+            <p class="text-center text-light">Collaborative Effort of Team Rocket | 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('open');
+        }
+
+        // Star generation
+        const stars = 300;
+        const starsContainer = document.getElementById('stars');
+        function createStars() {
+            starsContainer.innerHTML = '';
+            for (let i = 0; i < stars; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.width = '2px';
+                star.style.height = '2px';
+                star.style.background = 'white';
+                star.style.borderRadius = '50%';
+                star.style.top = Math.random() * window.innerHeight + 'px';
+                star.style.left = Math.random() * window.innerWidth + 'px';
+                star.style.opacity = Math.random();
+                star.style.animation = `twinkle ${1 + Math.random() * 2}s infinite alternate`;
+                starsContainer.appendChild(star);
+            }
+        }
+        createStars();
+        window.addEventListener('resize', createStars);
+
+        // Plotly Graph
+        var graphData = {{ graph_data | safe }};
+        var trace = {
+            x: graphData.map(d => d.datetime),
+            y: graphData.map(d => d.max),
+            type: 'scatter'
+        };
+        var layout = {
+            title: 'CO₂ Emissions Over Time By Human-Caused Emissions',
+            xaxis: { title: 'Date' },
+            yaxis: { title: 'CO₂ Emissions' }
+        };
+        Plotly.newPlot('graph', [trace], layout);
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

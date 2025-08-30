@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Climate Change Data Visualizations</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.cdnfonts.com/css/space-theme" rel="stylesheet">
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/space-theme');
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            color: #eee;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Full-page star container */
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* behind everything */
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        @keyframes twinkle {
+            from { opacity: 0.2; }
+            to { opacity: 1; }
+        }
+
+        #stars div {
+            pointer-events: none;
+        }
+
+        .page-header {
+            position: relative;
+            z-index: 10;
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            background: linear-gradient(135deg, #000000 0%, #111122 50%, #000011 100%);
+            color: #ffffff;
+            padding: 40px 20px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 50px rgba(0, 88, 171, 1), 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .page-header h1 {
+            margin: 0 0 15px 0;
+            font-size: 3rem;
+            font-family: 'Space Theme', sans-serif;
+        }
+
+        .page-header p {
+            margin: 0;
+            font-size: 1.3rem;
+            font-family: 'Space Theme', sans-serif;
+            color: #eee;
+        }
+
+        .container {
+            background-color: #111;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+        }
+
+        h1, h2 {
+            color: #fff;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .card-text {
+            font-size: 14px;
+        }
+
+        .img-fluid {
+            border-radius: 5px;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(180deg, #0a0a0a 0%, #111122 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            padding: 20px;
+            transition: left 0.3s ease;
+            overflow: hidden;
+            border-right: 1px solid rgba(0,255,255,0.2);
+            box-shadow: 0 0 30px rgba(0, 88, 171, 1), 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        /* Sidebar Title */
+        .sidebar-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-family: 'Space Theme', sans-serif;
+            color: #eee;
+        }
+
+        /* Navigation links */
+        .sidebar-nav a {
+            font-family: 'Space Theme', sans-serif;
+            font-size: 16px;  
+            color: #eee;
+            text-decoration: none;
+            padding: 10px 0;
+            display: block;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* Underline effect */
+        .sidebar-nav a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;           /* line at bottom of link */
+            width: 0;            /* start hidden */
+            height: 2px;         /* thickness of line */
+            background: #eee;    /* line color */
+            transition: width 0.3s ease;
+        }
+
+        /* Hover styles */
+        .sidebar-nav a:hover {
+            background-color: rgba(0,255,255,0.1);
+            color: #fff;
+            text-shadow: 0 0 5px #eee;
+        }
+
+        .sidebar-nav a:hover::before {
+            width: 100%;         /* expand line fully on hover */
+        }
+
+        /* Optional: floating stars in sidebar */
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            box-shadow: 50px 80px #fff, 100px 150px #fff, 70px 40px #fff, 150px 90px #fff;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -250px;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+        }
+
+
+        h2.text-center.mb-2 {
+            font-family: 'Space Theme', sans-serif;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        /* Main Content Area Styles */
+        .main-content {
+            padding: 20px;
+            margin-left: 250px;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Card Styles */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            background-color: #444;
+            box-shadow: 0 0 10px rgba(0, 88, 171, 1), 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .card-header {
+            color: #eee;
+            padding: 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .card-body {
+            padding: 15px;
+            color: #eee;
+        }
+
+        /* Mobile View Adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -250px;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .sidebar-toggle {
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                background-color: #333;
+                color: #eee;
+                padding: 10px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .main-content.open {
+                margin-left: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Star Background -->
+    <div id="stars"></div>
+
+    <header class="page-header text-center">
+        <h1>Climate Change Data Visualizations</h1>
+        <p>Explore interactive maps and graphs to understand climate change data.</p>
+    </header>
+
+    <div class="sidebar">
+        <h2 class="sidebar-title">AI Climate Monitor</h2>
+        <hr style="border: 0; height: 2px; background-color: white;">
+        <ul class="sidebar-nav">
+            <li><a href="/co2_absorption_air_sea">Global Ocean Carbon Absorption</a></li>
+            <li><a href="/co2_emissions_mip">Global Annual CO₂ Emissions</a></li>
+            <li><a href="/co2_emissions_odiac">Global CO₂ Emissions</a></li>
+            <li><a href="/methane_emissions_tm5">Global Methane Emissions</a></li>
+            <li><a href="/methane_concentrations_emit">Global Arid Regions High Methane Concentrations</a></li>
+            <li><a href="/prediction">AI Climate Predictions</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="container">
+            <h2 class="text-center mb-2">Uncover the Role of Greenhouse Gases in Your Neighborhood!</h2>
+
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header"><a href="/co2_absorption_air_sea">Global Ocean Carbon Absorption</a></div>
+                        <div class="card-body">
+                            <p class="card-text">• Monthly average air-sea CO₂ flux data.</p>
+                            <p class="card-text">• Shows how the ocean absorbs carbon.</p>
+                            <p class="card-text">• Data from 2020 to 2022.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header"><a href="/co2_emissions_mip">Global Annual CO₂ Emissions</a></div>
+                        <div class="card-body">
+                            <p class="card-text">• Annual CO₂ emissions and removals from 2015 to 2020.</p>
+                            <p class="card-text">• Global grid data including fossil fuel emissions and natural exchanges.</p>
+                            <p class="card-text">• Visualize trends and patterns.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header"><a href="/co2_emissions_odiac">Global CO₂ Emissions</a></div>
+                        <div class="card-body">
+                            <p class="card-text">• Monthly 1 km resolution data of fossil fuel CO₂ emissions.</p>
+                            <p class="card-text">• Data from 2022, showing global patterns.</p>
+                            <p class="card-text">• Explore human-caused emissions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header"><a href="/methane_emissions_tm5">Global Methane Emissions</a></div>
+                        <div class="card-body">
+                            <p class="card-text">• Monthly methane emissions from various sources.</p>
+                            <p class="card-text">• Includes microbial, fossil, and pyrogenic emissions.</p>
+                            <p class="card-text">• Explore natural and human-caused sources.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header"><a href="/methane_concentrations_emit">Global Arid Regions High Methane Concentrations</a></div>
+                        <div class="card-body">
+                            <p class="card-text">• EMIT data showing methane point source plume complexes.</p>
+                            <p class="card-text">• Measured by the International Space Station.</p>
+                            <p class="card-text">• Explore areas of high methane concentration.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header"><a href="/prediction">AI Climate Predictions</a></div>
+                        <div class="card-body">
+                            <p class="card-text">• Explore projected climate change scenarios.</p>
+                            <p class="card-text">• Includes temperature increases, sea level rise, and ecosystem impacts.</p>
+                            <p class="card-text">• Understand potential future effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-center">Collaborative Effort of Team Rocket | 2025</p>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('open');
+        }
+
+        // Star generation
+        const stars = 300;
+        const starsContainer = document.getElementById('stars');
+
+        function createStars() {
+            starsContainer.innerHTML = '';
+            for (let i = 0; i < stars; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.width = '2px';
+                star.style.height = '2px';
+                star.style.background = 'white';
+                star.style.borderRadius = '50%';
+                star.style.top = Math.random() * window.innerHeight + 'px';
+                star.style.left = Math.random() * window.innerWidth + 'px';
+                star.style.opacity = Math.random();
+                star.style.animation = `twinkle ${1 + Math.random() * 2}s infinite alternate`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        createStars();
+        window.addEventListener('resize', createStars);
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
